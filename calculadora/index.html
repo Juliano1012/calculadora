@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora Científica</title>
+  <style>
+    body {
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .calculator {
+      background-color: #111;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 420px;
+    }
+
+    .display {
+      background-color: #000;
+      color: #0f0;
+      font-size: 2em;
+      text-align: right;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      min-height: 50px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 14px;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover { transform: scale(1.05); }
+
+    .red { background: #ff3b30; color: #fff; }
+    .orange { background: #ff9500; color: #fff; }
+    .blue { background: #007aff; color: #fff; }
+    .gray { background: #444; color: #fff; }
+    .active { outline: 2px solid #fff; }
+
+    /* Ajuste visual de botões de modo */
+    .mode { background: #333; }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+
+    <div class="buttons">
+      <!-- Linha 1: Deg | Rad | x! | ( | ) | % | AC -->
+      <button class="gray mode active" id="btnDeg" onclick="setAngleMode('deg')">Deg</button>
+      <button class="gray mode" id="btnRad" onclick="setAngleMode('rad')">Rad</button>
+      <button class="gray" onclick="appendToken('!')">x!</button>
+      <button class="gray" onclick="appendToken('(')">(</button>
+      <button class="gray" onclick="appendToken(')')">)</button>
+      <button class="gray" onclick="appendToken('%')">%</button>
+      <button class="red" onclick="clearDisplay()">AC</button>
+
+      <!-- Linha 2: Inv | sin | ln | 7 | 8 | 9 | ÷ -->
+      <button class="gray" id="btnInv" onclick="toggleInv()">Inv</button>
+      <button class="gray" id="btnSin" onclick="appendFunction('sin')">sin</button>
+      <button class="gray" id="btnLn" onclick="appendFunction('ln')">ln</button>
+      <button class="gray" onclick="appendToken('7')">7</button>
+      <button class="gray" onclick="appendToken('8')">8</button>
+      <button class="gray" onclick="appendToken('9')">9</button>
+      <button class="orange" onclick="appendOperator('/')">÷</button>
+
+      <!-- Linha 3: π | cos | log | 4 | 5 | 6 | × -->
+      <button class="gray" onclick="appendConstant('π')">π</button>
+      <button class="gray" id="btnCos" onclick="appendFunction('cos')">cos</button>
+      <button class="gray" id="btnLog" onclick="appendFunction('log')">log</button>
+      <button class="gray" onclick="appendToken('4')">4</button>
+      <button class="gray" onclick="appendToken('5')">5</button>
+      <button class="gray" onclick="appendToken('6')">6</button>
+      <button class="orange" onclick="appendOperator('*')">×</button>
+
+      <!-- Linha 4: e | tan | √ | 1 | 2 | 3 | − -->
+      <button class="gray" onclick="appendConstant('e')">e</button>
+      <button class="gray" id="btnTan" onclick="appendFunction('tan')">tan</button>
+      <button class="gray" id="btnSqrt" onclick="appendFunction('sqrt')">√</button>
+      <button class="gray" onclick="appendToken('1')">1</button>
+      <button class="gray" onclick="appendToken('2')">2</button>
+      <button class="gray" onclick="appendToken('3')">3</button>
+      <button class="orange" onclick="appendOperator('-')">−</button>
+
+      <!-- Linha 5: Ans | EXP | xʸ | 0 | . | = | + -->
+      <button class="gray" onclick="appendAns()">Ans</button>
+      <button class="gray" id="btnExp" onclick="appendFunction('exp')">EXP</button>
+      <button class="gray" onclick="appendOperator('**')">xʸ</button>
+      <button class="gray" onclick="appendToken('0')">0</button>
+      <button class="gray" onclick="appendToken('.')">.</button>
+      <button class="blue" onclick="calculate()">=</button>
+      <button class="orange" onclick="appendOperator('+')">+</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const btnDeg = document.getElementById('btnDeg');
+    const btnRad = document.getElementById('btnRad');
+
+    const btnInv = document.getElementById('btnInv');
+    const btnSin = document.getElementById('btnSin');
+    const btnCos = document.getElementById('btnCos');
+    const btnTan = document.getElementById('btnTan');
+    const btnLn = document.getElementById('btnLn');
+    const btnLog = document.getElementById('btnLog');
+    const btnSqrt = document.getElementById('btnSqrt');
+    const btnExp = document.getElementById('btnExp');
+
+    let lastAnswer = 0;
+    let angleMode = 'deg'; // 'deg' ou 'rad'
+    let invMode = false;
+
+    function setAngleMode(mode) {
+      angleMode = mode;
+      btnDeg.classList.toggle('active', mode === 'deg');
+      btnRad.classList.toggle('active', mode === 'rad');
+    }
+
+    function toggleInv() {
+      invMode = !invMode;
+      btnInv.innerText = invMode ? 'Inv⁻¹' : 'Inv';
+      // Atualiza rótulos ao alternar
+      btnSin.innerText = invMode ? 'asin' : 'sin';
+      btnCos.innerText = invMode ? 'acos' : 'cos';
+      btnTan.innerText = invMode ? 'atan' : 'tan';
+      btnLn.innerText  = invMode ? 'exp'  : 'ln';
+      btnLog.innerText = invMode ? '10ˣ'  : 'log';
+      btnSqrt.innerText = invMode ? 'x²'  : '√';
+      btnExp.innerText = invMode ? 'exp' : 'EXP';
+    }
+
+    function appendToken(t) {
+      if (display.innerText === '0') {
+        display.innerText = t;
+      } else {
+        display.innerText += t;
+      }
+    }
+
+    function appendOperator(op) {
+      // Espaços ajudam a leitura, mas não são obrigatórios
+      display.innerText += ' ' + op + ' ';
+    }
+
+    function appendConstant(c) {
+      if (c === 'π') appendToken(Math.PI.toString());
+      if (c === 'e') appendToken(Math.E.toString());
+    }
+
+    function appendFunction(fn) {
+      // Inserir como função com parênteses para avaliar depois
+      // Respeita modo inverso
+      if (invMode) {
+        if (fn === 'sin') return appendToken('asin(');
+        if (fn === 'cos') return appendToken('acos(');
+        if (fn === 'tan') return appendToken('atan(');
+        if (fn === 'ln')  return appendToken('exp(');
+        if (fn === 'log') return appendToken('pow10(');
+        if (fn === 'sqrt') return appendToken('square(');
+        if (fn === 'exp') return appendToken('exp(');
+      } else {
+        if (fn === 'sin' || fn === 'cos' || fn === 'tan' || fn === 'exp' || fn === 'sqrt') {
+          return appendToken(fn + '(');
+        }
+        if (fn === 'ln')  return appendToken('ln(');
+        if (fn === 'log') return appendToken('log(');
+      }
+    }
+
+    function appendAns() {
+      appendToken(lastAnswer.toString());
+    }
+
+    function clearDisplay() {
+      display.innerText = '0';
+    }
+
+    // Helpers matemáticos disponíveis para avaliação
+    function toRad(x) { return x * Math.PI / 180; }
+    function toDeg(x) { return x * 180 / Math.PI; }
+    function log10(x) { return Math.log10 ? Math.log10(x) : Math.log(x) / Math.log(10); }
+    function pow10(x) { return Math.pow(10, x); }
+    function square(x) { return x * x; }
+    function factorial(n) {
+      if (n < 0 || !Number.isFinite(n)) return NaN;
+      if (Math.floor(n) !== n) return NaN; // fatorial apenas para inteiros
+      if (n === 0 || n === 1) return 1;
+      let res = 1;
+      for (let i = 2; i <= n; i++) res *= i;
+      return res;
+    }
+
+    function evalWithContext(expr) {
+      // Disponibiliza funções no escopo da avaliação
+      return Function('Math','toRad','toDeg','log10','pow10','square','factorial',
+        'return (' + expr + ');'
+      )(Math, toRad, toDeg, log10, pow10, square, factorial);
+    }
+
+    function preprocess(expr) {
+      // Limpar espaços redundantes
+      expr = expr.replace(/\s+/g, ' ');
+
+      // Percentuais: 50% -> (50/100)
+      expr = expr.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+
+      // Fatorial: 5! -> factorial(5)
+      expr = expr.replace(/(\d+(?:\.\d+)?)\s*!/g, 'factorial($1)');
+
+      // ln(...) -> Math.log(...)
+      expr = expr.replace(/\bln\(/g, 'Math.log(');
+
+      // log(...) -> log10(...)
+      expr = expr.replace(/\blog\(/g, 'log10(');
+
+      // sqrt(...) -> Math.sqrt(...)
+      expr = expr.replace(/\bsqrt\(/g, 'Math.sqrt(');
+
+      // exp(...) -> Math.exp(...)
+      expr = expr.replace(/\bexp\(/g, 'Math.exp(');
+
+      // square(x) -> x*x
+      expr = expr.replace(/\bsquare\(\s*([^)]+)\)/g, '($1*$1)');
+
+      // Trigonometria normal: sin, cos, tan
+      if (angleMode === 'deg') {
+        expr = expr.replace(/\bsin\(\s*([^)]+)\)/g, 'Math.sin(toRad($1))');
+        expr = expr.replace(/\bcos\(\s*([^)]+)\)/g, 'Math.cos(toRad($1))');
+        expr = expr.replace(/\btan\(\s*([^)]+)\)/g, 'Math.tan(toRad($1))');
+      } else {
+        expr = expr.replace(/\bsin\(/g, 'Math.sin(');
+        expr = expr.replace(/\bcos\(/g, 'Math.cos(');
+        expr = expr.replace(/\btan\(/g, 'Math.tan(');
+      }
+
+      // Trigonometria inversa: asin, acos, atan
+      if (angleMode === 'deg') {
+        expr = expr.replace(/\basin\(\s*([^)]+)\)/g, 'toDeg(Math.asin($1))');
+        expr = expr.replace(/\bacos\(\s*([^)]+)\)/g, 'toDeg(Math.acos($1))');
+        expr = expr.replace(/\batan\(\s*([^)]+)\)/g, 'toDeg(Math.atan($1))');
+      } else {
+        expr = expr.replace(/\basin\(/g, 'Math.asin(');
+        expr = expr.replace(/\bacos\(/g, 'Math.acos(');
+        expr = expr.replace(/\batan\(/g, 'Math.atan(');
+      }
+
+      // Constantes já entram como números: π e e foram inseridos como Math.PI e Math.E no texto
+      // Operadores visuais: garantir compatibilidade (já usamos /, *, +, -, **)
+
+      // Remover espaços redundantes finais
+      return expr.trim();
+    }
+
+    function calculate() {
+      try {
+        let expr = display.innerText;
+
+        // Troca '×' e '÷' se por acaso forem inseridos manualmente
+        expr = expr.replace(/×/g, '*').replace(/÷/g, '/');
+
+        // Substituir π e e se ainda estiverem escritos como símbolo (fallback)
+        expr = expr.replace(/π/g, Math.PI.toString()).replace(/\be\b/g, Math.E.toString());
+
+        // Substituir Ans
+        expr = expr.replace(/\bAns\b/g, lastAnswer.toString());
+
+        // Preprocessar funções e operadores especiais
+        expr = preprocess(expr);
+
+        const result = evalWithContext(expr);
+        if (!Number.isFinite(result)) throw new Error('Resultado inválido');
+        display.innerText = result;
+        lastAnswer = result;
+      } catch (e) {
+        display.innerText = 'Erro';
+      }
+    }
+  </script>
+</body>
+</html>
