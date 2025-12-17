@@ -2,55 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>README - Calculadora Científica</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #eee;
-      padding: 40px;
-      line-height: 1.6;
-    }
-
-    h1, h2, h3 {
-      color: #00f2fe;
-    }
-
-    code {
-      background-color: #222;
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: #0f0;
-    }
-
-    ul {
-      margin-left: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #444;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #333;
-    }
-
-    td {
-      background-color: #222;
-    }
-
-    .highlight {
-      color: #ff9500;
-    }
-  </style>
+  
 </head>
 <body>
   <h1>📐 Calculadora Científica — README</h1>
